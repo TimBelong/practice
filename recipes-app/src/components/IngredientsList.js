@@ -6,8 +6,8 @@ export default function IngredientsList ({list}){
     return (
         <ul className="ingredients">
             {list.map((ingredient,i) => (
-                <Ingredients key={i} {...list}/>
-        ))};
+                <Ingredients key={i} {...ingredient}/>
+            ))}
         </ul>
     )
 }
