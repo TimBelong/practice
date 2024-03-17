@@ -1,34 +1,40 @@
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import './App.css';
 
-function App() {
-  const [val, set] = useState('');
-  const [phrase, setPhrase] = useState('example phrase');
-
-  const createPhrase = () => {
-    setPhrase(val);
-    set('');
-  }
+const useAnyKeyToRender = () => {
+  const [, forceRender] = useState ();
 
   useEffect(() => {
-    console.log(`typing "${val}"`);
-  }, [val])
+    window.addEventListener('keydown', forceRender);
+    return () => window.removeEventListener("keydown", forceRender);
+  }, []);
+}
+
+function WordCount({children = ""}){
+  useAnyKeyToRender();
+
+  const words = useMemo(()=> {
+    return children.split(" ");
+  }, [children])
 
   useEffect(() => {
-    console.log(`saved phrase: "${phrase}"`);
-  }, [phrase])
+    console.log("fresh render");
+  }, [words])
 
   return (
     <>
-      <label>Favorite Phrase</label>
-      <input 
-		value={val}
-		placeholder={phrase}
-		onChange={e => set(e.target.value)}
-      />
-	  <button onClick={createPhrase}>Send</button>
+      <p>{children}</p>
+      <p>
+        <strong>{words.length} - words</strong>
+      </p>
     </>
+  )
+}
+
+function App() {
+  return(
+    <WordCount>You are not going to believe this but...</WordCount>
   )
 }
 
