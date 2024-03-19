@@ -1,40 +1,47 @@
 
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect} from 'react';
 import './App.css';
 
-const useAnyKeyToRender = () => {
-  const [, forceRender] = useState ();
+const loadJson = key => 
+  key && JSON.parse(localStorage.getItem(key));
+const saveJson = (key, data) =>
+  localStorage.setItem(key, JSON.stringify(data));
+
+function GitHubUser ({login}) {
+  const [data, setData] = useState(
+    loadJson(`user:${login}`)
+  );
 
   useEffect(() => {
-    window.addEventListener('keydown', forceRender);
-    return () => window.removeEventListener("keydown", forceRender);
-  }, []);
-}
-
-function WordCount({children = ""}){
-  useAnyKeyToRender();
-
-  const words = useMemo(()=> {
-    return children.split(" ");
-  }, [children])
+    if (!data) return;
+    if (data.login === login) return;
+    const {name, avatar_url, location} = data;
+    saveJson(`user:${login}`, {
+      name,
+      login,
+      avatar_url,
+      location
+    });
+  }, [data])
 
   useEffect(() => {
-    console.log("fresh render");
-  }, [words])
+    if (!login) return;
 
-  return (
-    <>
-      <p>{children}</p>
-      <p>
-        <strong>{words.length} - words</strong>
-      </p>
-    </>
-  )
+    fetch(`https://api.github.com/users/${login}`)
+      .then(response => response.json())
+      .then(setData)
+      .catch(console.error);
+  }, [login])
+
+  if (data)
+    return <pre>{JSON.stringify(data, null, 2)}</pre>
+  
+  return null;
 }
 
 function App() {
-  return(
-    <WordCount>You are not going to believe this but...</WordCount>
+  return (
+    <GitHubUser login='MoonHighway'/>
   )
 }
 
